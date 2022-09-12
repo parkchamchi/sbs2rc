@@ -72,17 +72,32 @@ class Projection():
 	Convert 180- or 360- video with equirectangular projection into a flat screen.
 	"""
 
-	def __init__(self, is180):
+	def __init__(self, is180, interpolation="linear"):
+		interpolations = {
+			"nearest": cv2.INTER_NEAREST,
+			"linear": cv2.INTER_LINEAR,
+			"cubic": cv2.INTER_CUBIC,
+		}
+		self.interpolation = interpolations[interpolation]
+
 		self.is180 = is180
 		self.origw = self.origh = 0
 
 	def pad(self, img): #for 180
 		height, width = img.shape[:2]
 
+		#out = np.pad(img, ((0, 0), (width//2, width//2), (0, 0))) #SLOWER
+
 		out = np.zeros((height, width*2, 3), dtype=np.uint8)
 		out[:, width//2:width//2+width] = img
 
 		return out
+
+	def getEqs(self):
+		raise NotImplementedError()
+
+	def method(self, img):
+		raise NotImplementedError()
 
 	def transform(self, img):
 		#check if the image size is changed
@@ -118,7 +133,7 @@ class CubemapProjection(Projection):
 		}
 
 		for name, (theta, phi) in params.items():
-			params[name] = eq.Equirect(self.origh, self.origw, self.size, 90, theta, phi) #90 fov approximates a half of the height.
+			params[name] = eq.Equirect(self.origh, self.origw, self.size, 90, theta, phi, self.interpolation) #90 fov approximates a half of the height.
 
 		self.eqs = params
 
@@ -162,8 +177,8 @@ class CubemapProjection(Projection):
 		return out	
 
 class FlatProjection(Projection):
-	def __init__(self, is180, fov=90, theta=0, phi=0):
-		super().__init__(is180)
+	def __init__(self, is180, interpolation="linear", fov=90, theta=0, phi=0):
+		super().__init__(is180, interpolation)
 
 		self.fov = fov
 		self.theta = theta
@@ -171,7 +186,7 @@ class FlatProjection(Projection):
 
 	def getEqs(self):
 		self.size = self.origh
-		self.eq = eq.Equirect(self.origh, self.origw, self.origh, self.fov, self.theta, self.phi)
+		self.eq = eq.Equirect(self.origh, self.origw, self.origh, self.fov, self.theta, self.phi, self.interpolation)
 
 	def method(self, img):
 		out = self.eq.transform(img)
@@ -291,6 +306,7 @@ if __name__ == "__main__":
 		""", choices=["ch", "gr"], default="ch")
 
 	parser.add_argument("--projmethod", help="Projection method. default: %(default)s", choices=["cubemap", "flat"], default="cubemap")
+	parser.add_argument("--projinter", help="Interpolation method for the projection. default: %(default)s", choices=["nearest", "linear", "cubic"], default="linear")
 	parser.add_argument("--fov", help="FOV value used for --projmethod flat. default: %(default)s", type=int, default=90)
 	parser.add_argument("--theta", help="theta value used for --projmethod flat. default: %(default)s", type=int, default=0)
 	parser.add_argument("--phi", help="phi value used for --projmethod flat. default: %(default)s", type=int, default=0)
@@ -309,7 +325,6 @@ if __name__ == "__main__":
 		raise ValueError("{} does not exist or is not a file.".format(inputname))
 
 	#check the out
-	
 	outputname = args.out
 	if not outputname:
 		root, ext = os.path.splitext(inputname)
@@ -328,10 +343,11 @@ if __name__ == "__main__":
 	if not args.preview:
 		print("Output: {}".format(outputname))
 
+	#check the projection
 	vertical = project = is180 = False
 
-	#guess from the filename
 	if args.guess:
+		#guess from the filename
 		basename = os.path.basename(inputname).lower()
 
 		keywords_dict = {
@@ -367,8 +383,8 @@ if __name__ == "__main__":
 
 	if project:
 		projections = {
-			"cubemap": CubemapProjection(is180=is180),
-			"flat": FlatProjection(is180=is180, fov=args.fov, theta=args.theta, phi=args.phi),
+			"cubemap": CubemapProjection(is180=is180, interpolation=args.projinter),
+			"flat": FlatProjection(is180=is180, fov=args.fov, theta=args.theta, phi=args.phi, interpolation=args.projinter),
 		}
 		proj = projections[args.projmethod]
 	else:
@@ -385,22 +401,28 @@ if __name__ == "__main__":
 
 	transformer = SBS2RC(vertical=vertical, method=args.method, proj=proj, switch=args.switch)
 
+	#the rest
+	image = args.image
+	preview = args.preview
+	fourcc = args.fourcc
+	noaudio = args.noaudio
+
 	###############################################
 	# Process
 	###############################################
 
 	#image file
-	if args.image:	
-		makeImage(inputname, outputname, transformer, preview=args.preview, scale=scale)
+	if image:	
+		makeImage(inputname, outputname, transformer, preview=preview, scale=scale)
 	else:
-		makeVideo(inputname, outputname, transformer, fourcc=args.fourcc, preview=args.preview, scale=scale)
+		makeVideo(inputname, outputname, transformer, fourcc=fourcc, preview=preview, scale=scale)
 
-	if args.preview:
-		exit(1)
+	if preview:
+		exit(0)
 
 	print("Wrote {}".format(outputname))
 
-	if not args.image and not args.noaudio:
+	if not image and not noaudio:
 		print("Adding audio...")
 
 		try:

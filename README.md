@@ -8,7 +8,7 @@ python sbs2rc.py input.mp4
 
 ### Options
 ```
-usage: sbs2rc.py [-h] [-o OUT] [-i] [-g] [-v] [-p {180,360}] [--method {ch,gr}] [--projmethod {cubemap,flat}] [--fov FOV] [--theta THETA] [--phi PHI] [--scale SCALE] [--switch] [--fourcc FOURCC] [--preview] [--noaudio] inputname
+usage: sbs2rc.py [-h] [-o OUT] [-i] [-g] [-v] [-p {180,360}] [--method {ch,gr}] [--projmethod {cubemap,flat}] [--projinter {nearest,linear,cubic}] [--fov FOV] [--theta THETA] [--phi PHI] [--scale SCALE] [--switch] [--fourcc FOURCC] [--preview] [--noaudio] inputname
 
 Converts a side-by-side 3D video to Analglyph (red-cyan) video.
 
@@ -26,6 +26,8 @@ optional arguments:
   --method {ch,gr}      Coloring method. default: ch <"ch": discard color channels that do not match.>, <"gr": set the image to grayscale then apply to the matching channels (left: red, right: cyan)>
   --projmethod {cubemap,flat}
                         Projection method. default: cubemap
+  --projinter {nearest,linear,cubic}
+                        Interpolation method for the projection. default: linear
   --fov FOV             FOV value used for --projmethod flat. default: 90
   --theta THETA         theta value used for --projmethod flat. default: 0
   --phi PHI             phi value used for --projmethod flat. default: 0

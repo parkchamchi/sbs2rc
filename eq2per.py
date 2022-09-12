@@ -57,13 +57,14 @@ def lonlat2XY(lonlat, shape):
 	return out 
 
 class Equirect():
-	def __init__(self, origh, origw, outsize, fov=90, theta=0, phi=0):
+	def __init__(self, origh, origw, outsize, fov=90, theta=0, phi=0, interpolation=cv2.INTER_LINEAR):
 		self.origw = origw
 		self.origh = origh
 		self.outsize = outsize
 		self.fov = fov
 		self.theta = theta
 		self.phi = phi
+		self.interpolation = interpolation
 
 		f = 0.5 * outsize * 1 / np.tan(0.5 * fov / 180.0 * np.pi)
 		cx = cy = (outsize - 1) / 2.0
@@ -96,4 +97,4 @@ class Equirect():
 		if img.shape[:2] != (self.origh, self.origw):
 			raise ValueError("Received {}, expecting {}.".format(img.shape[:2], (self.origh, self.origw)))
 
-		return cv2.remap(img, self.XY[..., 0], self.XY[..., 1], cv2.INTER_CUBIC, borderMode=cv2.BORDER_WRAP)
+		return cv2.remap(img, self.XY[..., 0], self.XY[..., 1], self.interpolation, borderMode=cv2.BORDER_WRAP)
