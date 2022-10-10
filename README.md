@@ -1,5 +1,5 @@
 # SBS2RC
-Converts a side-by-side 3d video into a red-cyan ([analglyph](https://en.wikipedia.org/wiki/Anaglyph_3D)) video.
+Converts a side-by-side 3d video into a red-cyan ([anaglyph](https://en.wikipedia.org/wiki/Anaglyph_3D)) video.
 
 ## Usage
 ```
@@ -10,7 +10,7 @@ python sbs2rc.py input.mp4
 ```
 usage: sbs2rc.py [-h] [-o OUT] [-i] [-g] [-v] [-p {180,360}] [--method {ch,gr}] [--projmethod {cubemap,flat}] [--projinter {nearest,linear,cubic}] [--fov FOV] [--theta THETA] [--phi PHI] [--scale SCALE] [--switch] [--fourcc FOURCC] [--preview] [--noaudio] inputname
 
-Converts a side-by-side 3D video to Analglyph (red-cyan) video.
+Converts a side-by-side 3D video to Anaglyph (red-cyan) video.
 
 positional arguments:
   inputname             The filename of the input

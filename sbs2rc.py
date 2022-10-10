@@ -8,7 +8,7 @@ from datetime import datetime
 
 class SBS2RC():
 	"""
-	Convert a side-by-side 3D image to a red-cyan (analglyph) image.
+	Convert a side-by-side 3D image to a red-cyan (anaglyph) image.
 	"""
 
 	def __init__(self, vertical=False, method="ch", proj=None, switch=False):
@@ -289,7 +289,7 @@ if __name__ == "__main__":
 	import argparse
 	import os
 
-	parser = argparse.ArgumentParser(description="Converts a side-by-side 3D video to Analglyph (red-cyan) video.")
+	parser = argparse.ArgumentParser(description="Converts a side-by-side 3D video to Anaglyph (red-cyan) video.")
 
 	parser.add_argument("inputname", help="The filename of the input")
 	parser.add_argument("-o", "--out", help="The filename of the output")
